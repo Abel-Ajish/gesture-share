@@ -1,0 +1,27 @@
+# Built artifacts
+**/build/
+**/bin/
+**/gen/
+**/out/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+.gradle/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Gradle Wrapper
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Secrets
+secrets.xml
+google-services.json

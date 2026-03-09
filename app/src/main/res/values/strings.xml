@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">GestureShare</string>
+    <string name="service_notification_channel_name">GestureShare Background Service</string>
+    <string name="service_notification_title">GestureShare is active</string>
+    <string name="service_notification_text">Circle gesture to share screenshot</string>
+    <string name="permission_request_title">Permissions Required</string>
+    <string name="permission_request_message">GestureShare requires overlay and media projection permissions to work.</string>
+    <string name="btn_start">Start Service</string>
+    <string name="btn_stop">Stop Service</string>
+    <string name="status_label">Status:</string>
+    <string name="status_idle">Idle</string>
+    <string name="status_running">Running</string>
+</resources>
