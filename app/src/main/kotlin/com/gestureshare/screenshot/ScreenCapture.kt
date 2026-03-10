@@ -63,6 +63,7 @@ class ScreenCapture(private val context: Context) {
      */
     @SuppressLint("WrongConstant")
     fun capture(callback: (Bitmap?) -> Unit) {
+        Log.d(TAG, "Starting screen capture")
         if (mediaProjection == null) {
             Log.e(TAG, "MediaProjection not initialized.")
             callback(null)
@@ -95,6 +96,7 @@ class ScreenCapture(private val context: Context) {
                 try {
                     image = reader.acquireLatestImage()
                     if (image != null) {
+                        Log.d(TAG, "Image acquired")
                         val planes = image.planes
                         val buffer = planes[0].buffer
                         val pixelStride = planes[0].pixelStride
@@ -116,6 +118,7 @@ class ScreenCapture(private val context: Context) {
                         } else {
                             bitmap = rawBitmap
                         }
+                        Log.d(TAG, "Bitmap created")
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error processing captured image: ${e.localizedMessage}")

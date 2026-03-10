@@ -25,7 +25,8 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             Log.d(TAG, "MediaProjection permission granted")
-            // The service will capture the screen, no need to pass data
+            val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            MediaProjectionHolder.mediaProjection = mediaProjectionManager.getMediaProjection(result.resultCode, result.data!!)
         } else {
             showError("Screen capture permission is required to share screenshots.")
         }

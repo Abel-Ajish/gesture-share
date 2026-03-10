@@ -39,13 +39,13 @@ class Sender(private val port: Int = 5000) {
                             // but sticking to PNG as per requirement with compression.
                             val result = bitmap.compress(Bitmap.CompressFormat.PNG, 70, outputStream)
                             outputStream.flush()
+                            Log.d(TAG, "Bitmap sent successfully to $ip")
                             result
                         }
                     }
                 }
             } catch (e: Exception) {
-                // Silently fail for broadcast attempts, but log for debugging
-                // Log.v(TAG, "Failed to send to $ip: ${e.localizedMessage}")
+                Log.e(TAG, "Failed to send to $ip: ${e.localizedMessage}")
                 false
             }
 

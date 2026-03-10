@@ -29,6 +29,7 @@ class CircleDetector(
      * Adds a point to the current gesture path with simple distance filtering.
      */
     fun addPoint(x: Float, y: Float) {
+        Log.v(TAG, "addPoint: ($x, $y)")
         val currentPoint = x to y
         val lp = lastPoint
         if (lp == null) {
@@ -99,6 +100,11 @@ class CircleDetector(
             val dist = calculateDistance(x, y, centerX, centerY)
             variance += (dist - avgDistance).pow(2)
         }
+        val normalizedVariance = sqrt(variance / points.size) / avgDistance
+
+        Log.d(TAG, "isCircle check: size=${points.size}, startEndDist=$distanceStartEnd, aspectRatio=$aspectRatio, radius=$radius, variance=$normalizedVariance")
+
+        return normalizedVariance < maxVarianceRatio
         val stdDev = sqrt(variance / points.size)
         val relativeStdDev = stdDev / avgDistance
 

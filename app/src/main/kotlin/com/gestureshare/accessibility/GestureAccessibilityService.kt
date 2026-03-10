@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import com.gestureshare.gesture.CircleDetector
 import com.gestureshare.network.Sender
+import com.gestureshare.screenshot.MediaProjectionHolder
 import com.gestureshare.screenshot.ScreenCapture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +57,13 @@ class GestureAccessibilityService : AccessibilityService() {
     }
 
     private fun captureAndSend() {
+        val mediaProjection = MediaProjectionHolder.mediaProjection
+        if (mediaProjection == null) {
+            Log.e(TAG, "MediaProjection not initialized.")
+            return
+        }
+
+        screenCapture.setMediaProjection(mediaProjection)
         screenCapture.capture { bitmap ->
             if (bitmap != null) {
                 Log.d(TAG, "Screenshot captured, broadcasting...")
