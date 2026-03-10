@@ -42,7 +42,7 @@ class OverlayService : LifecycleService() {
     private val NOTIFICATION_ID = 1
 
     private lateinit var windowManager: WindowManager
-    private var overlayView: FrameLayout? = null
+    private var overlayView: GestureOverlayView? = null
     private lateinit var circleDetector: CircleDetector
     private lateinit var screenCapture: ScreenCapture
     private lateinit var sender: Sender
@@ -108,15 +108,17 @@ class OverlayService : LifecycleService() {
     @SuppressLint("ClickableViewAccessibility")
     private fun setupOverlay() {
         try {
-            overlayView = FrameLayout(this).apply {
-                setBackgroundColor(Color.TRANSPARENT)
-                setOnTouchListener { _, event ->
+            overlayView = GestureOverlayView(this).apply {
+                setOnGestureListener { event ->
                     handleTouch(event)
-                    // Return false to allow touches to pass through to underlying apps
-                    false
                 }
             }
 
+            // The secret to touch pass-through while detecting gestures:
+            // 1. TYPE_APPLICATION_OVERLAY: The correct type for overlays.
+            // 2. FLAG_NOT_FOCUSABLE: So keyboard/IME doesn't focus on our overlay.
+            // 3. FLAG_NOT_TOUCH_MODAL: Crucial for passing touches to background.
+            // 4. FLAG_WATCH_OUTSIDE_TOUCH: Helps watch touches that happen outside bounds (though we are full screen).
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -128,13 +130,13 @@ class OverlayService : LifecycleService() {
                 },
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
-                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
             )
 
             windowManager.addView(overlayView, params)
-            Log.d(TAG, "Overlay added to window manager")
+            Log.d(TAG, "Overlay added to window manager with pass-through flags")
         } catch (e: Exception) {
             Log.e(TAG, "Error adding overlay: ${e.localizedMessage}")
             Toast.makeText(this, "Failed to initialize overlay", Toast.LENGTH_SHORT).show()
