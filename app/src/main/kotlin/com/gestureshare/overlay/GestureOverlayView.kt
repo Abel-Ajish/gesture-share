@@ -23,10 +23,8 @@ class GestureOverlayView @JvmOverloads constructor(
         // Forward to our gesture detector
         onGestureListener?.invoke(ev)
         
-        // Return false to let the system know we didn't "consume" the touch,
-        // so it can pass it to the window behind us.
-        // NOTE: For this to work perfectly with WindowManager flags, 
-        // we use FLAG_NOT_TOUCH_MODAL and FLAG_WATCH_OUTSIDE_TOUCH.
-        return super.dispatchTouchEvent(ev)
+        // Return false here to let the WindowManager know we didn't consume the touch.
+        // This is key for FLAG_NOT_TOUCH_MODAL to work.
+        return false
     }
 }

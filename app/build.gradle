@@ -11,8 +11,8 @@ android {
         applicationId "com.gestureshare"
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName "1.0"
+        versionCode System.currentTimeMillis().div(1000).toInteger()
+        versionName "1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
