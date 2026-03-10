@@ -1,46 +1,31 @@
 package com.gestureshare
 
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.app.Activity
-import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.accessibility.AccessibilityManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.gestureshare.databinding.ActivityMainBinding
-import com.gestureshare.overlay.OverlayService
 
-/**
- * MainActivity handles production-level permission requests and service management.
- */
 class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
     private lateinit var binding: ActivityMainBinding
-
-    private val overlayPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (Settings.canDrawOverlays(this)) {
-            Log.d(TAG, "Overlay permission granted")
-            requestMediaProjection()
-        } else {
-            showError("Overlay permission is required to detect gestures.")
-        }
-    }
 
     private val mediaProjectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             Log.d(TAG, "MediaProjection permission granted")
-            startOverlayService(result.resultCode, result.data!!)
+            // The service will capture the screen, no need to pass data
         } else {
             showError("Screen capture permission is required to share screenshots.")
         }
@@ -52,14 +37,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnAction.setOnClickListener {
-            if (isServiceRunning(OverlayService::class.java)) {
-                stopOverlayService()
-            } else {
-                checkPermissionsAndStart()
-            }
+            checkAndRequestPermissions()
         }
-        
-        // Notification permission for Android 13+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             registerForActivityResult(ActivityResultContracts.RequestPermission()) {}.launch(
                 android.Manifest.permission.POST_NOTIFICATIONS
@@ -72,13 +52,11 @@ class MainActivity : AppCompatActivity() {
         updateUI()
     }
 
-    private fun checkPermissionsAndStart() {
-        if (!Settings.canDrawOverlays(this)) {
-            val intent = Intent(
-                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
-            )
-            overlayPermissionLauncher.launch(intent)
+    private fun checkAndRequestPermissions() {
+        if (!isAccessibilityServiceEnabled()) {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            Toast.makeText(this, "Please enable the GestureShare accessibility service", Toast.LENGTH_LONG).show()
+            startActivity(intent)
         } else {
             requestMediaProjection()
         }
@@ -93,41 +71,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startOverlayService(resultCode: Int, resultData: Intent) {
-        try {
-            val intent = Intent(this, OverlayService::class.java).apply {
-                putExtra("RESULT_CODE", resultCode)
-                putExtra("RESULT_DATA", resultData)
-            }
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(intent)
-            } else {
-                startService(intent)
-            }
-            
-            // UI will update on next resume or via listener if we had one
-            updateUI()
-        } catch (e: Exception) {
-            showError("Failed to start service: ${e.localizedMessage}")
-        }
-    }
-
-    private fun stopOverlayService() {
-        stopService(Intent(this, OverlayService::class.java))
-        updateUI()
-    }
-
     private fun updateUI() {
-        val running = isServiceRunning(OverlayService::class.java)
+        val running = isAccessibilityServiceEnabled()
         binding.tvStatus.text = if (running) getString(R.string.status_running) else getString(R.string.status_idle)
-        binding.btnAction.text = if (running) getString(R.string.btn_stop) else getString(R.string.btn_start)
+        binding.btnAction.text = if (running) "Permissions Granted" else "Grant Permissions"
     }
 
-    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
-        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        for (service in manager.getRunningServices(Int.MAX_VALUE)) {
-            if (serviceClass.name == service.service.className) {
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val am = getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
+        val enabledServices = am.getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+        for (service in enabledServices) {
+            if (service.resolveInfo.serviceInfo.packageName == packageName) {
                 return true
             }
         }

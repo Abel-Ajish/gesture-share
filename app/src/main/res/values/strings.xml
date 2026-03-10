@@ -10,4 +10,5 @@
     <string name="status_label">Status:</string>
     <string name="status_idle">Idle</string>
     <string name="status_running">Running</string>
+    <string name="accessibility_service_description">This service allows GestureShare to detect gestures performed on the screen to trigger actions.</string>
 </resources>

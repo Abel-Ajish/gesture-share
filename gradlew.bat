@@ -71,7 +71,7 @@ set CMD_LINE_ARGS=
 set _SKIP=2
 
 :winNT_args_loop
-if %1 == "" goto execute
+if "%1" == "" goto execute
 
 set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
 shift
