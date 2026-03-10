@@ -63,8 +63,16 @@ class GestureAccessibilityService : AccessibilityService() {
             return
         }
 
+        val serviceIntent = Intent(this, ScreenCaptureService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
+
         screenCapture.setMediaProjection(mediaProjection)
         screenCapture.capture { bitmap ->
+            stopService(serviceIntent)
             if (bitmap != null) {
                 Log.d(TAG, "Screenshot captured, broadcasting...")
                 broadcastToLocalSubnet(bitmap)
