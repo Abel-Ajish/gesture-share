@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.gestureshare.databinding.ActivityMainBinding
+import com.gestureshare.screenshot.MediaProjectionHolder
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,12 +24,16 @@ class MainActivity : AppCompatActivity() {
     private val mediaProjectionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-            Log.d(TAG, "MediaProjection permission granted")
-            val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            MediaProjectionHolder.mediaProjection = mediaProjectionManager.getMediaProjection(result.resultCode, result.data!!)
-        } else {
-            showError("Screen capture permission is required to share screenshots.")
+        try {
+            if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+                Log.d(TAG, "MediaProjection permission granted")
+                val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                MediaProjectionHolder.mediaProjection = mediaProjectionManager.getMediaProjection(result.resultCode, result.data!!)
+            } else {
+                showError("Screen capture permission is required to share screenshots.")
+            }
+        } catch (e: Exception) {
+            showError("Failed to get MediaProjection: ${e.localizedMessage}")
         }
     }
 
