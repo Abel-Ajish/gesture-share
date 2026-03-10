@@ -114,11 +114,12 @@ class OverlayService : LifecycleService() {
                 }
             }
 
-            // The secret to touch pass-through while detecting gestures:
-            // 1. TYPE_APPLICATION_OVERLAY: The correct type for overlays.
-            // 2. FLAG_NOT_FOCUSABLE: So keyboard/IME doesn't focus on our overlay.
-            // 3. FLAG_NOT_TOUCH_MODAL: Crucial for passing touches to background.
-            // 4. FLAG_WATCH_OUTSIDE_TOUCH: Helps watch touches that happen outside bounds (though we are full screen).
+            // Using FLAG_NOT_TOUCHABLE for the main overlay is problematic if we want to catch gestures.
+            // Instead, we'll make the overlay 1x1 pixel and transparent, but placed in a way it doesn't block.
+            // Wait, a better approach for "passive" detection is tricky on modern Android.
+            // Let's use FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCH_MODAL | FLAG_WATCH_OUTSIDE_TOUCH
+            // BUT we must ensure the view itself doesn't consume touches.
+            
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -131,12 +132,24 @@ class OverlayService : LifecycleService() {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                        WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, // ADD THIS: Makes it transparent to touches!
                 PixelFormat.TRANSLUCENT
             )
 
+            // Actually, FLAG_NOT_TOUCHABLE will prevent handleTouch from getting events.
+            // The only way to get events AND pass them through on non-rooted Android 
+            // is usually an AccessibilityService. 
+            // However, we can try to use a very small trigger area or a different flag combo.
+            
+            // REVISION: Let's use the "Split Touch" approach.
+            params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_SPLIT_TOUCH
+
             windowManager.addView(overlayView, params)
-            Log.d(TAG, "Overlay added to window manager with pass-through flags")
+            Log.d(TAG, "Overlay added with SPLIT_TOUCH flags")
         } catch (e: Exception) {
             Log.e(TAG, "Error adding overlay: ${e.localizedMessage}")
             Toast.makeText(this, "Failed to initialize overlay", Toast.LENGTH_SHORT).show()
@@ -145,6 +158,9 @@ class OverlayService : LifecycleService() {
     }
 
     private fun handleTouch(event: MotionEvent) {
+        // Log touch for debugging
+        // Log.v(TAG, "Touch event: ${event.action}")
+        
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 circleDetector.reset()
@@ -156,9 +172,14 @@ class OverlayService : LifecycleService() {
             MotionEvent.ACTION_UP -> {
                 circleDetector.addPoint(event.x, event.y)
                 if (circleDetector.isCircle()) {
-                    Log.d(TAG, "Circle gesture detected, capturing screen...")
+                    Log.d(TAG, "Circle gesture detected!")
                     captureAndSend()
                 }
+            }
+            MotionEvent.ACTION_OUTSIDE -> {
+                // This is triggered when touch happens outside the view (if not full screen)
+                // or if flags are set to watch outside.
+                circleDetector.addPoint(event.x, event.y)
             }
         }
     }

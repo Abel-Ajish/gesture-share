@@ -53,11 +53,12 @@ class ReceiveAnimation(private val context: Context, private val windowManager: 
                 WindowManager.LayoutParams.TYPE_PHONE
             },
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or // Animation shouldn't block touches
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_DIM_BEHIND, // Use system dimming
             PixelFormat.TRANSLUCENT
         )
+        params.dimAmount = 0.6f // 60% dimming
 
         val ivScreenshot = animationView!!.findViewById<ImageView>(R.id.iv_screenshot)
         val vGlowCircle = animationView!!.findViewById<View>(R.id.v_glow_circle)
