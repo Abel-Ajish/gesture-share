@@ -16,7 +16,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_top_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tv_description"
@@ -27,7 +27,7 @@
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_top_toBottomOf="@id/tv_title" />
+        app:layout_constraintTop_toBottomOf="@id/tv_title" />
 
     <TextView
         android:id="@+id/tv_status_label"
@@ -38,7 +38,7 @@
         app:layout_constraintEnd_toStartOf="@id/tv_status"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_top_toBottomOf="@id/tv_description" />
+        app:layout_constraintTop_toBottomOf="@id/tv_description" />
 
     <TextView
         android:id="@+id/tv_status"
@@ -59,7 +59,7 @@
         android:text="@string/btn_start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_top_toBottomOf="@id/tv_status_label" />
+        app:layout_constraintTop_toBottomOf="@id/tv_status_label" />
 
     <TextView
         android:id="@+id/tv_instructions"
@@ -69,6 +69,6 @@
         android:text="1. Grant Permissions\n2. Click Start\n3. Draw circle in any app\n4. Screenshot will be sent to other device"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_top_toBottomOf="@id/btn_action" />
+        app:layout_constraintTop_toBottomOf="@id/btn_action" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
